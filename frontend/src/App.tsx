@@ -40,7 +40,7 @@ export const App: React.FC = () => {
   const [takeaways, setTakeaways] = useState<CreatorTakeaway[]>([]);
   const [isTraining, setIsTraining] = useState(false);
 
-  const loadAllData = async (code: string = currentCountry, level: string = analysisLevel) => {
+  const loadAllData = async (level: string = analysisLevel) => {
     try {
       const [
         countriesRes,
@@ -86,7 +86,7 @@ export const App: React.FC = () => {
     setCurrentCountry(newCountry);
     try {
       await api.selectCountry(newCountry);
-      await loadAllData(newCountry);
+      await loadAllData();
     } catch (e) {
       console.error('Failed to switch country dataset:', e);
     }

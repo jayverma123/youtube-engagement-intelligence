@@ -11,7 +11,6 @@ import {
   Upload,
   Globe2,
   Database,
-  Calendar,
   CheckCircle2,
   Menu,
   X
