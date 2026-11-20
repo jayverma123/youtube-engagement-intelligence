@@ -9,7 +9,7 @@ import {
   ResponsiveContainer,
   CartesianGrid
 } from 'recharts';
-import { Layers, CheckCircle2 } from 'lucide-react';
+import { Layers } from 'lucide-react';
 
 interface ClusterIntelligenceProps {
   clusters: ClusterSummary[];
