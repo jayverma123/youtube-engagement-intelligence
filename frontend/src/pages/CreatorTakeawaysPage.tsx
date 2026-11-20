@@ -1,6 +1,6 @@
 import React from 'react';
 import { CreatorTakeaway } from '../types';
-import { Lightbulb, CheckCircle2, AlertTriangle, ArrowRight, TrendingUp } from 'lucide-react';
+import { CheckCircle2, AlertTriangle } from 'lucide-react';
 
 interface CreatorTakeawaysProps {
   takeaways: CreatorTakeaway[];

@@ -9,7 +9,7 @@ import {
   ResponsiveContainer,
   CartesianGrid
 } from 'recharts';
-import { Layers, CheckCircle2, TrendingUp, Users } from 'lucide-react';
+import { Layers, CheckCircle2 } from 'lucide-react';
 
 interface ClusterIntelligenceProps {
   clusters: ClusterSummary[];
@@ -33,16 +33,6 @@ export const ClusterIntelligencePage: React.FC<ClusterIntelligenceProps> = ({
   const activeCluster = selectedCluster
     ? clusters.find((c) => c.cluster_name === selectedCluster) || clusters[0]
     : clusters[0];
-
-  // Cluster PCA / scatter mapping with cluster colors
-  const clusterColors: Record<string, string> = {
-    'Lower Engagement': '#64748B',
-    'Moderate Engagement': '#3B82F6',
-    'Higher Engagement': '#FF0000',
-    'Low Engagement': '#64748B',
-    'High Engagement': '#FF0000',
-    'Viral / High Reach': '#E11D48',
-  };
 
   const points = relationshipData?.points || [];
 

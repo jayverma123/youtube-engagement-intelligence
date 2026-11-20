@@ -9,7 +9,7 @@ import {
   CartesianGrid
 } from 'recharts';
 import { CorrelationMatrix, RelationshipPoint } from '../types';
-import { GitCommit, Activity, Info } from 'lucide-react';
+import { GitCommit, Activity } from 'lucide-react';
 
 interface EngagementPageProps {
   relationshipData: {

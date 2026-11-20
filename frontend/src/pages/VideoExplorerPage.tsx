@@ -3,15 +3,9 @@ import { VideoRecord, CategoryMetric, ClusterSummary } from '../types';
 import { api } from '../services/api';
 import {
   Search,
-  Filter,
   ExternalLink,
   ChevronLeft,
-  ChevronRight,
-  Eye,
-  ThumbsUp,
-  MessageSquare,
-  TrendingUp,
-  Film
+  ChevronRight
 } from 'lucide-react';
 
 interface VideoExplorerProps {

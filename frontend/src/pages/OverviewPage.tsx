@@ -6,9 +6,7 @@ import {
   MessageSquare,
   TrendingUp,
   Award,
-  Video,
-  BarChart,
-  ArrowUpRight
+  BarChart
 } from 'lucide-react';
 import {
   BarChart as RechartsBarChart,
