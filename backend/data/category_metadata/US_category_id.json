@@ -1,0 +1,23 @@
+{
+  "kind": "youtube#videoCategoryListResponse",
+  "etag": "\"m2ZfAnxPjVak42i47rMrVBtm_Fg/1v2mrzYSYG6onNLt2q6D2fYKAZ8\"",
+  "items": [
+    {"id": "1", "snippet": {"title": "Film & Animation"}},
+    {"id": "2", "snippet": {"title": "Autos & Vehicles"}},
+    {"id": "10", "snippet": {"title": "Music"}},
+    {"id": "15", "snippet": {"title": "Pets & Animals"}},
+    {"id": "17", "snippet": {"title": "Sports"}},
+    {"id": "19", "snippet": {"title": "Travel & Events"}},
+    {"id": "20", "snippet": {"title": "Gaming"}},
+    {"id": "22", "snippet": {"title": "People & Blogs"}},
+    {"id": "23", "snippet": {"title": "Comedy"}},
+    {"id": "24", "snippet": {"title": "Entertainment"}},
+    {"id": "25", "snippet": {"title": "News & Politics"}},
+    {"id": "26", "snippet": {"title": "Howto & Style"}},
+    {"id": "27", "snippet": {"title": "Education"}},
+    {"id": "28", "snippet": {"title": "Science & Technology"}},
+    {"id": "29", "snippet": {"title": "Nonprofits & Activism"}},
+    {"id": "30", "snippet": {"title": "Movies"}},
+    {"id": "43", "snippet": {"title": "Shows"}}
+  ]
+}
