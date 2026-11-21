@@ -13,7 +13,8 @@ import {
   Database,
   CheckCircle2,
   Menu,
-  X
+  X,
+  FileText
 } from 'lucide-react';
 import { DatasetAuditInfo, CountryOption } from '../types';
 
@@ -64,6 +65,7 @@ export const DashboardLayout: React.FC<LayoutProps> = ({
 
   const navItems = [
     { to: '/', label: 'Overview', icon: LayoutDashboard },
+    { to: '/dataset-transparency', label: 'Dataset Quality & Audit', icon: FileText },
     { to: '/categories', label: 'Category Analysis', icon: BarChart3 },
     { to: '/engagement', label: 'Engagement Relationships', icon: GitFork },
     { to: '/ml-clustering', label: 'ML Clustering (K-Means)', icon: Cpu },
@@ -80,13 +82,13 @@ export const DashboardLayout: React.FC<LayoutProps> = ({
           <button
             onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
             className="lg:hidden p-1.5 rounded-md hover:bg-gray-100 text-gray-700"
+            aria-label="Toggle menu"
           >
             {mobileMenuOpen ? <X size={20} /> : <Menu size={20} />}
           </button>
           
           <div className="flex items-center gap-3">
             <div className="flex items-center">
-              {/* Authentic YouTube Logo Icon */}
               <svg className="w-8 h-6 sm:w-9 sm:h-6" viewBox="0 0 28 20" fill="none" xmlns="http://www.w3.org/2000/svg">
                 <path
                   d="M27.424 3.094A3.486 3.486 0 0 0 24.97.64C22.808.06 14 .06 14 .06s-8.808 0-10.97.58A3.486 3.486 0 0 0 .576 3.094C0 5.257 0 9.771 0 9.771s0 4.514.576 6.677a3.486 3.486 0 0 0 2.454 2.454c2.162.58 10.97.58 10.97.58s8.808 0 10.97-.58a3.486 3.486 0 0 0 2.454-2.454c.576-2.163.576-6.677.576-6.677s0-4.514-.576-6.677z"
@@ -105,7 +107,6 @@ export const DashboardLayout: React.FC<LayoutProps> = ({
 
         {/* Global Controls & Dataset Status */}
         <div className="flex items-center gap-3 sm:gap-4">
-          {/* Country Selector */}
           <div className="flex items-center gap-1.5 bg-gray-50 border border-gray-200 rounded-lg px-2.5 py-1 text-xs sm:text-sm">
             <Globe2 size={15} className="text-gray-500" />
             <select
@@ -121,7 +122,6 @@ export const DashboardLayout: React.FC<LayoutProps> = ({
             </select>
           </div>
 
-          {/* Dataset Upload Trigger */}
           <label className="cursor-pointer inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg border border-gray-200 hover:bg-gray-50 text-xs font-semibold text-gray-700 transition">
             <Upload size={14} />
             <span className="hidden md:inline">{isUploading ? 'Uploading...' : 'Upload CSV'}</span>
@@ -147,11 +147,19 @@ export const DashboardLayout: React.FC<LayoutProps> = ({
             <span>Total Cleaned: <strong>{auditInfo.final_records.toLocaleString()}</strong> rows</span>
             <span>Unique Videos: <strong>{auditInfo.unique_videos.toLocaleString()}</strong></span>
             <span>Categories: <strong>{auditInfo.categories_count}</strong></span>
+            {auditInfo.data_quality_score && (
+              <span className="text-emerald-700 bg-emerald-50 px-2 py-0.5 rounded border border-emerald-200 font-semibold">
+                Quality: {auditInfo.data_quality_score}%
+              </span>
+            )}
             {auditInfo.duplicates_removed > 0 && (
               <span className="text-amber-700 bg-amber-50 px-1.5 py-0.5 rounded border border-amber-200">
                 Deduped {auditInfo.duplicates_removed.toLocaleString()} trending duplicates
               </span>
             )}
+          </div>
+          <div className="text-[11px] text-gray-400">
+            {auditInfo.last_processed ? `Processed: ${auditInfo.last_processed}` : ''}
           </div>
         </div>
       )}
@@ -190,7 +198,6 @@ export const DashboardLayout: React.FC<LayoutProps> = ({
             })}
           </div>
 
-          {/* Footer badge */}
           <div className="p-4 border-t border-gray-200 bg-gray-50 text-[11px] text-gray-500">
             <div className="flex items-center gap-1 font-semibold text-gray-700 mb-1">
               <CheckCircle2 size={13} className="text-emerald-600" /> Live Data Verified

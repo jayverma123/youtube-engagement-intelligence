@@ -1,6 +1,7 @@
 import os
 import json
 import logging
+from datetime import datetime, timezone
 from typing import Dict, List, Optional, Tuple, Any
 import pandas as pd
 import numpy as np
@@ -47,7 +48,6 @@ class DataService:
             code = c["code"]
             json_file = os.path.join(self.metadata_dir, f"{code}_category_id.json")
             if not os.path.exists(json_file):
-                # Try generic or IN
                 json_file = os.path.join(self.metadata_dir, "IN_category_id.json")
                 if not os.path.exists(json_file):
                     json_file = os.path.join(self.metadata_dir, "US_category_id.json")
@@ -69,7 +69,6 @@ class DataService:
         mapping = self.category_maps.get(country_code, {})
         if category_id in mapping:
             return mapping[category_id]
-        # Check IN/US default
         in_map = self.category_maps.get("IN", {})
         if category_id in in_map:
             return in_map[category_id]
@@ -86,7 +85,6 @@ class DataService:
             count = 0
             if is_avail:
                 try:
-                    # Quick line count estimate or actual
                     count = sum(1 for _ in open(csv_path, 'r', encoding='utf-8', errors='ignore')) - 1
                 except Exception:
                     count = 1
@@ -104,7 +102,6 @@ class DataService:
         csv_path = os.path.join(self.raw_dir, f"{target}videos.csv")
         
         if not os.path.exists(csv_path):
-            # Check if any other country exists
             avail = [c for c in self.supported_countries if os.path.exists(os.path.join(self.raw_dir, c["filename"]))]
             if avail:
                 target = avail[0]["code"]
@@ -123,7 +120,18 @@ class DataService:
                     "final_records": 0,
                     "unique_videos": 0,
                     "categories_count": 0,
-                    "date_range": {"min": "", "max": ""}
+                    "date_range": {"min": "", "max": ""},
+                    "data_quality_score": 100.0,
+                    "missing_pct": 0.0,
+                    "duplicate_pct": 0.0,
+                    "features_available": [],
+                    "last_processed": datetime.now(timezone.utc).isoformat(),
+                    "dataset_source": "Kaggle YouTube Trending Videos (datasnaek/youtube-new)",
+                    "limitations": [
+                        "Historical archive (2017-2018). Does not reflect YouTube's live real-time API.",
+                        "YouTube officially discontinued public Trending pages in July 2025.",
+                        "Clustering models describe observed performance patterns, not causal determinants."
+                    ]
                 }
                 return
 
@@ -132,7 +140,6 @@ class DataService:
 
     def _load_and_process_csv(self, file_path: str, country_code: str):
         try:
-            # Load with flexible encoding and fallback engine
             try:
                 df_raw = pd.read_csv(file_path, encoding='utf-8', on_bad_lines='skip')
             except UnicodeDecodeError:
@@ -143,15 +150,13 @@ class DataService:
 
         original_count = len(df_raw)
         
-        # Required column verification
         required_cols = ['video_id', 'title', 'channel_title', 'category_id', 'views', 'likes', 'comment_count']
         missing_cols = [c for c in required_cols if c not in df_raw.columns]
         if missing_cols:
             logger.error(f"Missing required columns in CSV: {missing_cols}")
             return
 
-        # 1. Missing values
-        # Check critical fields
+        # 1. Missing values handling
         before_drop_na = len(df_raw)
         df = df_raw.dropna(subset=['video_id', 'title', 'views']).copy()
         missing_handled = before_drop_na - len(df)
@@ -173,10 +178,9 @@ class DataService:
         df = df[valid_mask].copy()
 
         # Handle zero views to avoid division by zero
-        # Views cannot be strictly negative; if 0 views, engagement rate is 0
         df['views_safe'] = df['views'].apply(lambda v: max(v, 1))
 
-        # 4. Fill optional text columns
+        # 4. Fill text columns
         df['title'] = df['title'].fillna('Untitled').astype(str)
         df['channel_title'] = df['channel_title'].fillna('Unknown Channel').astype(str)
         if 'thumbnail_link' not in df.columns:
@@ -196,18 +200,14 @@ class DataService:
         # 7. Engagement Metrics Calculation
         # Engagement Rate (%) = ((Likes + Comments) / Views) * 100
         df['engagement_rate'] = ((df['likes'] + df['comment_count']) / df['views_safe']) * 100.0
-        # Round to 2 decimal places
         df['engagement_rate'] = df['engagement_rate'].round(2)
         
-        # Like-to-view and Comment-to-view ratios
         df['like_to_view_ratio'] = (df['likes'] / df['views_safe']).round(4)
         df['comment_to_view_ratio'] = (df['comment_count'] / df['views_safe']).round(4)
 
         # 8. Handling Trending vs Video-Level Deduplication
-        # Trending records table has all historical dates
         self.df_trending = df.copy()
 
-        # For video-level analysis, aggregate or keep the latest trending date/highest views observation
         # Sort by views descending so keeping first keeps maximum recorded engagement
         df_sorted = df.sort_values(by=['views', 'likes', 'comment_count'], ascending=False)
         df_unique_videos = df_sorted.drop_duplicates(subset=['video_id'], keep='first').copy()
@@ -219,6 +219,11 @@ class DataService:
         min_date = str(df['publish_time'].min())[:10] if not df['publish_time'].isnull().all() else ""
         max_date = str(df['publish_time'].max())[:10] if not df['publish_time'].isnull().all() else ""
 
+        # Data quality score calculation: 100 - (missing_pct + invalid_pct)
+        missing_pct = round((missing_handled / max(original_count, 1)) * 100, 2)
+        dup_pct = round((duplicates_removed / max(original_count, 1)) * 100, 2)
+        quality_score = round(max(0, 100.0 - missing_pct - (invalid_count / max(original_count, 1) * 100)), 1)
+
         self.audit_info = {
             "country": country_code,
             "filename": os.path.basename(file_path),
@@ -229,7 +234,18 @@ class DataService:
             "final_records": len(df),
             "unique_videos": len(df_unique_videos),
             "categories_count": int(df['category_name'].nunique()),
-            "date_range": {"min": min_date, "max": max_date}
+            "date_range": {"min": min_date, "max": max_date},
+            "data_quality_score": quality_score,
+            "missing_pct": missing_pct,
+            "duplicate_pct": dup_pct,
+            "features_available": list(df.columns),
+            "last_processed": datetime.now(timezone.utc).strftime("%Y-%m-%d %H:%M UTC"),
+            "dataset_source": "Kaggle YouTube Trending Videos (datasnaek/youtube-new)",
+            "limitations": [
+                "Dataset contains historical archived records (2017-2018), not live streaming video metrics.",
+                "YouTube officially discontinued public Trending pages in July 2025; trending feeds are now algorithmic.",
+                "K-Means clustering indicates observational clustering of past performance, not predictive virality."
+            ]
         }
         logger.info(f"Loaded dataset for {country_code}: {self.audit_info}")
 
@@ -239,12 +255,10 @@ class DataService:
             with open(target_path, "wb") as f:
                 f.write(file_content)
             
-            # Identify country code if named like XXvideos.csv
             code = "CUSTOM"
             if len(filename) >= 7 and filename.endswith("videos.csv"):
                 code = filename[:2].upper()
             
-            # Reprocess
             self.init_dataset(code if any(c["code"] == code for c in self.supported_countries) else None)
             return True, f"Successfully uploaded and processed {filename}"
         except Exception as e:

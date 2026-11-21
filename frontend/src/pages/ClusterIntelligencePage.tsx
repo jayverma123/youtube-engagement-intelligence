@@ -7,9 +7,12 @@ import {
   YAxis,
   Tooltip,
   ResponsiveContainer,
-  CartesianGrid
+  CartesianGrid,
+  BarChart,
+  Bar,
+  Legend
 } from 'recharts';
-import { Layers } from 'lucide-react';
+import { Layers, ArrowUpDown, SlidersHorizontal } from 'lucide-react';
 
 interface ClusterIntelligenceProps {
   clusters: ClusterSummary[];
@@ -21,6 +24,8 @@ export const ClusterIntelligencePage: React.FC<ClusterIntelligenceProps> = ({
   relationshipData
 }) => {
   const [selectedCluster, setSelectedCluster] = useState<string | null>(null);
+  const [compareClusterA, setCompareClusterA] = useState<string>(clusters[0]?.cluster_name || '');
+  const [compareClusterB, setCompareClusterB] = useState<string>(clusters[1]?.cluster_name || clusters[0]?.cluster_name || '');
 
   if (!clusters || clusters.length === 0) {
     return (
@@ -34,6 +39,32 @@ export const ClusterIntelligencePage: React.FC<ClusterIntelligenceProps> = ({
     ? clusters.find((c) => c.cluster_name === selectedCluster) || clusters[0]
     : clusters[0];
 
+  const clusterA = clusters.find((c) => c.cluster_name === compareClusterA) || clusters[0];
+  const clusterB = clusters.find((c) => c.cluster_name === compareClusterB) || clusters[1] || clusters[0];
+
+  const comparisonData = [
+    {
+      metric: 'Engagement Rate (%)',
+      [clusterA.cluster_name]: clusterA.avg_engagement_rate,
+      [clusterB.cluster_name]: clusterB.avg_engagement_rate
+    },
+    {
+      metric: 'Views (x100k)',
+      [clusterA.cluster_name]: Number((clusterA.avg_views / 100000).toFixed(1)),
+      [clusterB.cluster_name]: Number((clusterB.avg_views / 100000).toFixed(1))
+    },
+    {
+      metric: 'Likes (x10k)',
+      [clusterA.cluster_name]: Number((clusterA.avg_likes / 10000).toFixed(1)),
+      [clusterB.cluster_name]: Number((clusterB.avg_likes / 10000).toFixed(1))
+    },
+    {
+      metric: 'Comments (x1k)',
+      [clusterA.cluster_name]: Number((clusterA.avg_comments / 1000).toFixed(1)),
+      [clusterB.cluster_name]: Number((clusterB.avg_comments / 1000).toFixed(1))
+    }
+  ];
+
   const points = relationshipData?.points || [];
 
   return (
@@ -41,7 +72,7 @@ export const ClusterIntelligencePage: React.FC<ClusterIntelligenceProps> = ({
       <div className="bg-white p-6 rounded-xl border border-gray-200 shadow-sm">
         <h1 className="text-2xl font-bold text-gray-900 tracking-tight">Cluster Intelligence & Profiling</h1>
         <p className="text-sm text-gray-500 mt-1">
-          Detailed behavioral characteristics, summary statistics, and content patterns for each engagement tier.
+          Detailed behavioral characteristics, summary statistics, cluster comparisons, and 2D spatial separation.
         </p>
       </div>
 
@@ -61,7 +92,7 @@ export const ClusterIntelligencePage: React.FC<ClusterIntelligenceProps> = ({
             >
               <div className="text-xs text-gray-400 uppercase font-semibold">Cluster Tier</div>
               <div className="text-sm font-bold text-gray-900 mt-0.5">{c.cluster_name}</div>
-              <div className="text-xs text-[#FF0000] font-mono mt-1">
+              <div className="text-xs text-[#FF0000] mt-1 font-semibold">
                 {c.share_of_total}% of videos ({c.video_count.toLocaleString()})
               </div>
             </button>
@@ -69,7 +100,7 @@ export const ClusterIntelligencePage: React.FC<ClusterIntelligenceProps> = ({
         })}
       </div>
 
-      {/* Selected Cluster Deep Profile */}
+      {/* Selected Cluster Profile */}
       <div className="bg-white p-6 rounded-xl border border-gray-200 shadow-sm space-y-6">
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 border-b border-gray-100 pb-4">
           <div>
@@ -79,7 +110,7 @@ export const ClusterIntelligencePage: React.FC<ClusterIntelligenceProps> = ({
             </h2>
             <p className="text-xs text-gray-500 mt-1">{activeCluster.explanation}</p>
           </div>
-          <span className="text-xs font-mono px-3 py-1 bg-red-50 text-[#FF0000] rounded-full border border-red-200 font-bold self-start sm:self-auto">
+          <span className="text-xs px-3 py-1 bg-red-50 text-[#FF0000] rounded-full border border-red-200 font-bold self-start sm:self-auto">
             {activeCluster.video_count.toLocaleString()} videos
           </span>
         </div>
@@ -119,7 +150,7 @@ export const ClusterIntelligencePage: React.FC<ClusterIntelligenceProps> = ({
           </div>
         </div>
 
-        {/* Top Categories in this Cluster */}
+        {/* Top Categories */}
         <div>
           <h3 className="text-xs font-semibold text-gray-500 uppercase mb-3">Dominant Categories in this Cluster</h3>
           <div className="flex flex-wrap gap-2">
@@ -129,7 +160,7 @@ export const ClusterIntelligencePage: React.FC<ClusterIntelligenceProps> = ({
                 className="px-3 py-1.5 rounded-lg bg-gray-100 text-xs font-medium text-gray-800 flex items-center gap-2 border border-gray-200"
               >
                 <span>{tc.category}</span>
-                <span className="bg-white px-1.5 py-0.5 rounded text-[10px] font-mono font-bold text-gray-600">
+                <span className="bg-white px-1.5 py-0.5 rounded text-[10px] font-bold text-gray-600">
                   {tc.count} videos
                 </span>
               </span>
@@ -138,14 +169,59 @@ export const ClusterIntelligencePage: React.FC<ClusterIntelligenceProps> = ({
         </div>
       </div>
 
+      {/* Cluster Comparison Tool */}
+      <div className="bg-white p-6 rounded-xl border border-gray-200 shadow-sm space-y-4">
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+          <div className="flex items-center gap-2">
+            <SlidersHorizontal size={18} className="text-[#FF0000]" />
+            <h3 className="text-base font-bold text-gray-900">Interactive Cluster Comparison Tool</h3>
+          </div>
+          <div className="flex items-center gap-2 text-xs">
+            <select
+              value={compareClusterA}
+              onChange={(e) => setCompareClusterA(e.target.value)}
+              className="bg-gray-50 border border-gray-300 rounded p-1.5 font-medium"
+            >
+              {clusters.map((c) => (
+                <option key={c.cluster_id} value={c.cluster_name}>{c.cluster_name}</option>
+              ))}
+            </select>
+            <span className="text-gray-400 font-bold">vs</span>
+            <select
+              value={compareClusterB}
+              onChange={(e) => setCompareClusterB(e.target.value)}
+              className="bg-gray-50 border border-gray-300 rounded p-1.5 font-medium"
+            >
+              {clusters.map((c) => (
+                <option key={c.cluster_id} value={c.cluster_name}>{c.cluster_name}</option>
+              ))}
+            </select>
+          </div>
+        </div>
+
+        <div className="h-64 w-full">
+          <ResponsiveContainer width="100%" height="100%">
+            <BarChart data={comparisonData} margin={{ top: 10, right: 10, left: -10, bottom: 20 }}>
+              <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#F0F0F0" />
+              <XAxis dataKey="metric" tick={{ fontSize: 11, fill: '#606060' }} />
+              <YAxis tick={{ fontSize: 11, fill: '#606060' }} />
+              <Tooltip contentStyle={{ backgroundColor: '#fff', borderRadius: '8px', border: '1px solid #E5E5E5' }} />
+              <Legend />
+              <Bar dataKey={clusterA.cluster_name} fill="#0F0F0F" radius={[4, 4, 0, 0]} />
+              <Bar dataKey={clusterB.cluster_name} fill="#FF0000" radius={[4, 4, 0, 0]} />
+            </BarChart>
+          </ResponsiveContainer>
+        </div>
+      </div>
+
       {/* Cluster PCA 2D Dimensionality Reduction Chart */}
       <div className="bg-white p-6 rounded-xl border border-gray-200 shadow-sm">
         <div className="flex items-center justify-between mb-2">
-          <h3 className="text-base font-bold text-gray-900">2D PCA Cluster Separation Plot</h3>
+          <h3 className="text-base font-bold text-gray-900">2D PCA Spatial Separation Plot</h3>
           <span className="text-xs text-gray-500">Principal Component Analysis Projection</span>
         </div>
         <p className="text-xs text-gray-500 mb-4">
-          Note: PCA reduces 4D engagement features (Views, Likes, Comments, Rate) to 2 components for visual verification.
+          Note: PCA reduces 4D engagement features (Views, Likes, Comments, Rate) to 2 orthogonal components for visual separation inspection.
         </p>
 
         <div className="h-72 w-full">

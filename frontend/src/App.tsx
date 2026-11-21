@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
 import { DashboardLayout } from './layouts/DashboardLayout';
 import { OverviewPage } from './pages/OverviewPage';
+import { DatasetTransparencyPage } from './pages/DatasetTransparencyPage';
 import { CategoryAnalysisPage } from './pages/CategoryAnalysisPage';
 import { EngagementPage } from './pages/EngagementPage';
 import { MLClusteringPage } from './pages/MLClusteringPage';
@@ -58,7 +59,7 @@ export const App: React.FC = () => {
         api.getOverview(level),
         api.getCategories(level),
         api.getTrends(),
-        api.getRelationships(400),
+        api.getRelationships(500),
         api.getEvaluation(),
         api.getClusters(),
         api.getCreatorTakeaways()
@@ -125,6 +126,10 @@ export const App: React.FC = () => {
                 setAnalysisLevel={setAnalysisLevel}
               />
             }
+          />
+          <Route
+            path="/dataset-transparency"
+            element={<DatasetTransparencyPage auditInfo={auditInfo} />}
           />
           <Route
             path="/categories"

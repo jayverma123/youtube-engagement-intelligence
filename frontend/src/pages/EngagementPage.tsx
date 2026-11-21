@@ -22,6 +22,7 @@ export const EngagementPage: React.FC<EngagementPageProps> = ({ relationshipData
   const [xAxisKey, setXAxisKey] = useState<'views' | 'likes' | 'comments'>('views');
   const [yAxisKey, setYAxisKey] = useState<'likes' | 'comments' | 'engagement_rate'>('likes');
   const [useLogScale, setUseLogScale] = useState(true);
+  const [correlationType, setCorrelationType] = useState<'pearson' | 'spearman'>('pearson');
 
   if (!relationshipData || !relationshipData.points) {
     return <div className="p-8 text-center text-gray-500">Loading relationship data...</div>;
@@ -29,7 +30,6 @@ export const EngagementPage: React.FC<EngagementPageProps> = ({ relationshipData
 
   const { points, correlation } = relationshipData;
 
-  // Transform points for logarithmic display if toggle enabled
   const chartPoints = points.map((p) => {
     let xVal = p[xAxisKey];
     let yVal = p[yAxisKey];
@@ -46,13 +46,17 @@ export const EngagementPage: React.FC<EngagementPageProps> = ({ relationshipData
     };
   });
 
+  const activeMatrix = correlationType === 'spearman' && correlation.spearman_matrix
+    ? correlation.spearman_matrix
+    : correlation.matrix;
+
   return (
     <div className="space-y-6">
       <div className="bg-white p-6 rounded-xl border border-gray-200 shadow-sm flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div>
           <h1 className="text-2xl font-bold text-gray-900 tracking-tight">Engagement Metric Relationships</h1>
           <p className="text-sm text-gray-500 mt-1">
-            Analyze mathematical correlations and multi-variable interactions between views, likes, and comments.
+            Analyze mathematical correlations, rank dependencies, and multi-variable interactions between views, likes, and comments.
           </p>
         </div>
 
@@ -103,8 +107,8 @@ export const EngagementPage: React.FC<EngagementPageProps> = ({ relationshipData
             <Activity size={18} className="text-[#FF0000]" />
             Scatter Distribution ({xAxisKey} vs {yAxisKey})
           </h3>
-          <span className="text-xs text-gray-500 font-mono">
-            Sample size: {points.length} videos
+          <span className="text-xs text-gray-500">
+            Sample size: {points.length} verified titles
           </span>
         </div>
 
@@ -147,7 +151,7 @@ export const EngagementPage: React.FC<EngagementPageProps> = ({ relationshipData
                     <div className="bg-white p-3 rounded-lg border border-gray-200 shadow-lg text-xs space-y-1">
                       <div className="font-bold text-gray-900 line-clamp-1">{data.title}</div>
                       <div className="text-gray-500">{data.channel_title} • {data.category_name}</div>
-                      <div className="pt-1 font-mono grid grid-cols-2 gap-x-3 gap-y-0.5 text-gray-700">
+                      <div className="pt-1 grid grid-cols-2 gap-x-3 gap-y-0.5 text-gray-700">
                         <span>Views: {data.views.toLocaleString()}</span>
                         <span>Likes: {data.likes.toLocaleString()}</span>
                         <span>Comments: {data.comments.toLocaleString()}</span>
@@ -164,14 +168,32 @@ export const EngagementPage: React.FC<EngagementPageProps> = ({ relationshipData
         </div>
       </div>
 
-      {/* Pearson Correlation Heatmap */}
+      {/* Correlation Matrix with Pearson / Spearman Switch */}
       <div className="bg-white p-6 rounded-xl border border-gray-200 shadow-sm">
-        <div className="flex items-center gap-2 mb-3">
-          <GitCommit size={18} className="text-[#FF0000]" />
-          <h3 className="text-base font-bold text-gray-900">Pearson Correlation Matrix</h3>
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 mb-3">
+          <div className="flex items-center gap-2">
+            <GitCommit size={18} className="text-[#FF0000]" />
+            <h3 className="text-base font-bold text-gray-900">
+              {correlationType === 'spearman' ? 'Spearman Rank Correlation Matrix' : 'Pearson Linear Correlation Matrix'}
+            </h3>
+          </div>
+          <div className="flex items-center gap-1.5 bg-gray-100 p-1 rounded-lg text-xs font-semibold">
+            <button
+              onClick={() => setCorrelationType('pearson')}
+              className={`px-3 py-1 rounded transition ${correlationType === 'pearson' ? 'bg-white text-gray-900 shadow-sm' : 'text-gray-500'}`}
+            >
+              Pearson (Linear)
+            </button>
+            <button
+              onClick={() => setCorrelationType('spearman')}
+              className={`px-3 py-1 rounded transition ${correlationType === 'spearman' ? 'bg-white text-gray-900 shadow-sm' : 'text-gray-500'}`}
+            >
+              Spearman (Rank / Non-linear)
+            </button>
+          </div>
         </div>
         <p className="text-xs text-gray-500 mb-4">
-          Note: Correlation measures linear co-movement (-1 to +1). It does not indicate causality.
+          Note: Correlation measures statistical co-movement (-1 to +1). It strictly demonstrates statistical association, not causal mechanics.
         </p>
 
         <div className="overflow-x-auto">
@@ -186,15 +208,14 @@ export const EngagementPage: React.FC<EngagementPageProps> = ({ relationshipData
                 ))}
               </tr>
             </thead>
-            <tbody className="divide-y divide-gray-100 font-mono text-sm">
+            <tbody className="divide-y divide-gray-100 text-sm">
               {correlation.features.map((rowFeat, rIdx) => (
                 <tr key={rowFeat}>
-                  <td className="p-3 text-left font-sans font-semibold text-gray-800 uppercase text-xs">
+                  <td className="p-3 text-left font-semibold text-gray-800 uppercase text-xs">
                     {rowFeat.replace('_', ' ')}
                   </td>
-                  {correlation.matrix[rIdx].map((val, cIdx) => {
+                  {activeMatrix[rIdx]?.map((val, cIdx) => {
                     const isDiag = rIdx === cIdx;
-                    // Color intensity based on positive correlation
                     let bg = 'bg-gray-50';
                     if (!isDiag) {
                       if (val > 0.7) bg = 'bg-red-100 text-red-900 font-bold';
@@ -203,7 +224,7 @@ export const EngagementPage: React.FC<EngagementPageProps> = ({ relationshipData
                     }
                     return (
                       <td key={cIdx} className={`p-3 rounded ${bg}`}>
-                        {val.toFixed(3)}
+                        {val !== undefined ? val.toFixed(3) : '1.000'}
                       </td>
                     );
                   })}

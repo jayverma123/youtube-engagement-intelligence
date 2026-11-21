@@ -9,6 +9,13 @@ export interface DatasetAuditInfo {
   unique_videos: number;
   categories_count: number;
   date_range: { min: string; max: string };
+  data_quality_score?: number;
+  missing_pct?: number;
+  duplicate_pct?: number;
+  features_available?: string[];
+  last_processed?: string;
+  dataset_source?: string;
+  limitations?: string[];
 }
 
 export interface CountryOption {
@@ -41,10 +48,13 @@ export interface CategoryMetric {
   total_likes: number;
   total_comments: number;
   avg_views: number;
+  median_views?: number;
   avg_likes: number;
   avg_comments: number;
   avg_engagement_rate: number;
+  median_engagement_rate?: number;
   percentage_of_videos: number;
+  dominant_cluster?: string;
 }
 
 export interface RelationshipPoint {
@@ -64,6 +74,7 @@ export interface RelationshipPoint {
 export interface CorrelationMatrix {
   features: string[];
   matrix: number[][];
+  spearman_matrix?: number[][];
 }
 
 export interface ClusterSummary {
@@ -91,6 +102,18 @@ export interface MLEvaluation {
   scaler_type: string;
   features_used: string[];
   silhouette_score_optimal: number;
+  model_name?: string;
+  random_seed?: number;
+  training_timestamp?: string;
+  feature_redundancy_analysis?: Record<string, Record<string, number>>;
+  stability_score?: number;
+  cluster_centroids?: Array<{
+    cluster_name: string;
+    center_views: number;
+    center_likes: number;
+    center_comments: number;
+    center_engagement_rate: number;
+  }>;
 }
 
 export interface VideoRecord {
@@ -115,7 +138,11 @@ export interface CreatorTakeaway {
   id: string;
   title: string;
   metric: string;
+  baseline?: string;
   insight: string;
   recommendation: string;
   category: string;
+  sample_size?: number;
+  confidence_note?: string;
+  limitations?: string;
 }

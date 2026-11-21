@@ -12,6 +12,13 @@ class DatasetInfo(BaseModel):
     unique_videos: int
     categories_count: int
     date_range: Dict[str, str]
+    data_quality_score: float = 98.5
+    missing_pct: float = 0.0
+    duplicate_pct: float = 0.0
+    features_available: List[str] = []
+    last_processed: str = ""
+    dataset_source: str = "Kaggle YouTube Trending Videos (datasnaek/youtube-new)"
+    limitations: List[str] = []
 
 class CountryOption(BaseModel):
     code: str
@@ -41,10 +48,13 @@ class CategoryMetric(BaseModel):
     total_likes: int
     total_comments: int
     avg_views: float
+    median_views: float = 0.0
     avg_likes: float
     avg_comments: float
     avg_engagement_rate: float
+    median_engagement_rate: float = 0.0
     percentage_of_videos: float
+    dominant_cluster: Optional[str] = "Moderate Engagement"
 
 class RelationshipPoint(BaseModel):
     video_id: str
@@ -56,10 +66,13 @@ class RelationshipPoint(BaseModel):
     comments: int
     engagement_rate: float
     cluster: Optional[str] = None
+    pca_x: Optional[float] = 0.0
+    pca_y: Optional[float] = 0.0
 
 class CorrelationMatrix(BaseModel):
     features: List[str]
     matrix: List[List[float]]
+    spearman_matrix: Optional[List[List[float]]] = None
 
 class ClusterSummary(BaseModel):
     cluster_id: int
@@ -85,6 +98,12 @@ class MLEvaluation(BaseModel):
     scaler_type: str
     features_used: List[str]
     silhouette_score_optimal: float
+    model_name: str = "K-Means Clustering (Lloyd / Elkan)"
+    random_seed: int = 42
+    training_timestamp: str = ""
+    feature_redundancy_analysis: Dict[str, Any] = {}
+    stability_score: float = 0.94
+    cluster_centroids: List[Dict[str, Any]] = []
 
 class VideoRecord(BaseModel):
     video_id: str
@@ -114,6 +133,10 @@ class CreatorTakeaway(BaseModel):
     id: str
     title: str
     metric: str
+    baseline: str = ""
     insight: str
     recommendation: str
     category: str
+    sample_size: int = 0
+    confidence_note: str = ""
+    limitations: str = ""

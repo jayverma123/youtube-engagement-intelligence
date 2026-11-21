@@ -86,7 +86,7 @@ export const CategoryAnalysisPage: React.FC<CategoryAnalysisProps> = ({ categori
         </div>
       </div>
 
-      {/* Detailed Category Table */}
+      {/* Detailed Category Table with Dominant Cluster Column */}
       <div className="bg-white rounded-xl border border-gray-200 shadow-sm overflow-hidden">
         <div className="p-4 border-b border-gray-200 font-bold text-gray-900 text-base">
           All Categories Detailed Breakdown
@@ -102,6 +102,7 @@ export const CategoryAnalysisPage: React.FC<CategoryAnalysisProps> = ({ categori
                 <th className="px-4 py-3 text-right">Avg Likes</th>
                 <th className="px-4 py-3 text-right">Avg Comments</th>
                 <th className="px-4 py-3 text-right text-gray-900">Avg Engagement Rate</th>
+                <th className="px-4 py-3 text-center">Dominant Cluster</th>
               </tr>
             </thead>
             <tbody className="divide-y divide-gray-200 text-xs">
@@ -115,6 +116,11 @@ export const CategoryAnalysisPage: React.FC<CategoryAnalysisProps> = ({ categori
                   <td className="px-4 py-3 text-right">{Math.round(c.avg_comments).toLocaleString()}</td>
                   <td className="px-4 py-3 text-right font-bold text-[#FF0000]">
                     {c.avg_engagement_rate}%
+                  </td>
+                  <td className="px-4 py-3 text-center">
+                    <span className="px-2 py-0.5 rounded bg-gray-100 text-gray-700 text-[10px] font-semibold border border-gray-200">
+                      {c.dominant_cluster || 'Moderate Engagement'}
+                    </span>
                   </td>
                 </tr>
               ))}
