@@ -46,6 +46,15 @@ if data_service.df_unique is not None and len(data_service.df_unique) > 0:
     except Exception as e:
         logger.error(f"Failed initial clustering: {e}")
 
+@app.get("/")
+def root():
+    return {
+        "status": "online",
+        "service": "YouTube Engagement Intelligence API",
+        "docs": "/docs",
+        "health": "/api/health"
+    }
+
 @app.get("/api/health")
 def health_check():
     return {
