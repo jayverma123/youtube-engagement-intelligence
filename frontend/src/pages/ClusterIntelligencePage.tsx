@@ -12,7 +12,7 @@ import {
   Bar,
   Legend
 } from 'recharts';
-import { Layers, ArrowUpDown, SlidersHorizontal } from 'lucide-react';
+import { Layers, SlidersHorizontal } from 'lucide-react';
 
 interface ClusterIntelligenceProps {
   clusters: ClusterSummary[];

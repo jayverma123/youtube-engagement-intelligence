@@ -11,7 +11,7 @@ import {
   BarChart,
   Bar
 } from 'recharts';
-import { Cpu, Play, AlertCircle, Sparkles, ShieldCheck, CheckCircle2, Sliders } from 'lucide-react';
+import { Cpu, Play, AlertCircle, Sparkles, Sliders } from 'lucide-react';
 
 interface MLClusteringProps {
   evaluation: MLEvaluation | null;

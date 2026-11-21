@@ -1,4 +1,4 @@
-const rawUrl = import.meta.env.VITE_API_URL || '';
+const rawUrl = (import.meta as any).env?.VITE_API_URL || '';
 const API_BASE = rawUrl.endsWith('/api')
   ? rawUrl
   : rawUrl
